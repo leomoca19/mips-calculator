@@ -14,8 +14,8 @@ main_loop:
 	beq $t0, $t1, SUB
 	li $t1, 3
 	beq $t0, $t1, MUL
-	#li $t1, 4
-	#beq $t0, $t1, DIV
+	li $t1, 4
+	beq $t0, $t1, DIV
 	jr $ra
 		
 greet:
@@ -69,6 +69,26 @@ listen:
 	li $v0, 5
 	syscall
 	move $t1, $v0
+	jr $ra
+	
+listen_div: 
+	# get first number
+	li $v0, 4
+	la $a0, listen1
+	syscall
+	li $v0, 5
+	syscall
+	mtc1 $v0, $f0
+	cvt.s.w $f0, $f0
+	
+	# get second number
+	li $v0, 4
+	la $a0, listen2
+	syscall
+	li $v0, 5
+	syscall
+	mtc1 $v0, $f1
+	cvt.s.w $f1, $f1
 	jr $ra
 	
 ADD:
@@ -136,7 +156,29 @@ MUL:
 	la $a0, nwln
 	syscall	
 	j main_loop	
+
+DIV:
+	# print operation message
+	li $v0, 4
+	la $a0, divide
+	syscall
 	
+	#listen for float
+	jal listen_div
+	
+	# print result
+	div.s $f2, $f0, $f1
+	li $v0, 4
+	la $a0, result
+	syscall
+	li $v0, 2 # print float
+	mov.s $f12, $f2
+	syscall
+	
+	li $v0, 4
+	la $a0, nwln
+	syscall	
+	j main_loop
 .data
 greeting: .asciiz "Hi User, Welcome to my calculator!\n\n"
 
