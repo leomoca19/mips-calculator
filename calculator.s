@@ -1,7 +1,9 @@
 .text
 main:
 	jal greet
-	
+	jal main_loop
+
+main_loop:
 	jal menu
 	
 	li $t1, 0
@@ -10,18 +12,12 @@ main:
 	beq $t0, $t1, ADD
 	li $t1, 2
 	beq $t0, $t1, SUB
-	#li $t1, 3
-	#beq $t0, $t1, MUL
+	li $t1, 3
+	beq $t0, $t1, MUL
 	#li $t1, 4
 	#beq $t0, $t1, DIV
+	jr $ra
 		
-	#SUB:
-	#MUL:
-	#DIV:
-	
-	jal say_bye
-	jal exit
-	
 greet:
     	# print greeting
 	li $v0, 4 
@@ -35,8 +31,9 @@ say_bye:
 	la $a0, goodbye
 	syscall
 	jr $ra
-	
+		
 exit:
+	jal say_bye
 	li $v0, 10 # load exit instruction
 	syscall
 	
@@ -56,6 +53,23 @@ menu:
 	move $t0, $v0
 	jr $ra
 
+listen: 
+	# get first number
+	li $v0, 4
+	la $a0, listen1
+	syscall
+	li $v0, 5
+	syscall
+	move $t0, $v0
+	
+	# get second number
+	li $v0, 4
+	la $a0, listen2
+	syscall
+	li $v0, 5
+	syscall
+	move $t1, $v0
+	jr $ra
 	
 ADD:
 	# print operation message
@@ -77,7 +91,7 @@ ADD:
 	li $v0, 4
 	la $a0, nwln
 	syscall	
-	jr $ra	
+	j main_loop	
 
 SUB:
 	# print operation message
@@ -99,25 +113,30 @@ SUB:
 	li $v0, 4
 	la $a0, nwln
 	syscall	
-	jr $ra	
+	j main_loop	
 	
-listen: 
-	# get first number
+MUL:
+	# print operation message
 	li $v0, 4
-	la $a0, listen1
+	la $a0, multiply
 	syscall
-	li $v0, 5
-	syscall
-	move $t0, $v0
 	
-	# get second number
+	jal listen
+	
+	# print result
+	mul $t2, $t0, $t1
 	li $v0, 4
-	la $a0, listen2
+	la $a0, result
 	syscall
-	li $v0, 5
+	li $v0, 1
+	move $a0, $t2
 	syscall
-	move $t1, $v0
-	jr $ra
+	
+	li $v0, 4
+	la $a0, nwln
+	syscall	
+	j main_loop	
+	
 .data
 greeting: .asciiz "Hi User, Welcome to my calculator!\n\n"
 
@@ -128,7 +147,7 @@ result: .asciiz "The result is "
 
 addition: .asciiz "(Adding)"
 subtract: .asciiz "(Subtracting)"
-mulitply: .asciiz "(Multiplying)"
+multiply: .asciiz "(Multiplying)"
 divide: .asciiz "(Dividing)"
 two_numbers: .asciiz " two numbers\n"
 
